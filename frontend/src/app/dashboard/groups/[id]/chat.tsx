@@ -6,12 +6,12 @@ import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
 import {
   ChatMessage,
-  ChatMessageList,
   fetchMessages,
   sendMessage,
   getMessagesByGroup,
   deleteRemoteMessage,
 } from '@/lib/message-store'
+import { ChatMessageList } from '@/components/chat-message'
 import { MentionSelect } from '@/components/mention-select'
 import { getToken, getAgentId, getAgentName, getAgentName as fetchAgentName } from '@/lib/api'
 

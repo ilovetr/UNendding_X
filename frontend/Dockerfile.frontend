@@ -9,6 +9,9 @@ RUN npm install
 # Copy application
 COPY . .
 
+# Fix node_modules/.bin permissions
+RUN find node_modules/.bin -type f -exec chmod +x {} \;
+
 # Build
 RUN npm run build
 
@@ -16,7 +19,6 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 COPY --from=0 /app/.next ./.next
-COPY --from=0 /app/public ./public
 COPY --from=0 /app/package*.json ./
 RUN npm install --production
 

@@ -207,7 +207,7 @@ export async function sendMessage(
     group_id: groupId,
     sender: {
       type: 'human',
-      id: agentId,
+      id: agentId || 'unknown',
       name: senderName,
     },
     content,
