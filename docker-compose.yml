@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: unendingx_db
+    environment:
+      POSTGRES_DB: unendingx
+      POSTGRES_USER: unendingx
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-unendingx_secret}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unendingx"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    container_name: unendingx_backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://unendingx:${DB_PASSWORD:-unendingx_secret}@db:5432/unendingx
+      DATABASE_URL_SYNC: postgresql+psycopg2://unendingx:${DB_PASSWORD:-unendingx_secret}@db:5432/unendingx
+      SECRET_KEY: ${SECRET_KEY:-change_this_in_production}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRE_MINUTES: 1440
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: unendingx_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
