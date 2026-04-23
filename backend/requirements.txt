@@ -14,8 +14,8 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 
 # RBAC
-casbin==1.42.0
-casbin-sqlalchemy-adapter==0.2.2
+casbin==1.43.0
+casbin-sqlalchemy-adapter==1.4.0
 
 # Validation
 pydantic==2.6.1
