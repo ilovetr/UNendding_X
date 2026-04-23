@@ -12,6 +12,7 @@ dependencies = [
     "requests>=2.28",
     "rich>=13.0",
     "uvicorn>=0.30",
+    "cryptography>=41.0",
 ]
 
 [project.scripts]
