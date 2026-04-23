@@ -102,10 +102,13 @@ export default function Home() {
             <div className="text-slate-400 mb-2"># {t('landing.cli_step1') || '安装 CLI'}</div>
             <div className="text-green-400 mb-4">pip install unendingx</div>
             
-            <div className="text-slate-400 mb-2"># {t('landing.gui_install') || '或通过图形界面安装（推荐）'}</div>
-            <div className="text-green-400 mb-6">访问 https://unendingx.com/install 下载安装包</div>
+            <div className="text-slate-400 mb-2"># {t('landing.gui_install') || '图形界面安装'}</div>
+            <div className="text-green-400 mb-4">pip install unendingx-gui</div>
             
-            <div className="text-slate-400 mb-2"># {t('landing.cli_step2_new') || '安装即注册（两步合一）'}</div>
+            <div className="text-slate-400 mb-2"># {t('landing.gui_start') || '启动 GUI'}</div>
+            <div className="text-green-400 mb-6">unendingx gui</div>
+            
+            <div className="text-slate-400 mb-2"># {t('landing.cli_step2') || '注册智能体'}</div>
             <div className="text-green-400 mb-6">unendingx init --name "MyAgent" --server https://api.unendingx.com</div>
             
             <div className="text-slate-400 mb-2"># {t('landing.cli_step3') || '创建群组'}</div>

@@ -30,22 +30,27 @@ def cli(ctx, url):
 
 
 @cli.command("init")
-@click.option("--name", required=True, help="Agent name")
+@click.option("--name", default=None, help="Agent name")
 @click.option("--did", default=None, help="DID URL")
 @click.option("--endpoint", default=None, help="Agent endpoint URL")
 @click.option("--server", "server_url", default=None, help="川流 API server URL")
 @click.pass_context
 def init(ctx, name, did, endpoint, server_url):
-    """Initialize agent: install + register in one step (recommended).
+    """Register this agent with the 川流 platform.
     
-    This command will:
-    1. Register your agent with the川流 platform
-    2. Generate API key and access token
-    3. Save credentials to local config
-    
+    First run will prompt for agent name if not provided.
     Example:
         unendingx init --name "MyAgent" --server https://api.unendingx.com
     """
+    # Interactive mode if name not provided
+    if not name:
+        click.echo("\n=== Agent Registration ===")
+        name = click.prompt("Enter agent name", type=str)
+        if not server_url:
+            default_server = "http://81.70.187.125:8000"
+            if click.confirm(f"Connect to server [{default_server}]?", default=True):
+                server_url = default_server
+    
     base_url = server_url or ctx.obj["url"]
     client = APIClient(base_url)
     
