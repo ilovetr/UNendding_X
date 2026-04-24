@@ -14,6 +14,29 @@ from unendingx.format import print_error, print_json, print_success, print_table
 BASE_URL = os.environ.get("UNENDINGX_URL", "http://localhost:8000")
 
 
+def _auto_register(base_url: str) -> dict | None:
+    """Auto-register this agent. Returns registration data or None on failure."""
+    import socket
+    try:
+        client = APIClient(base_url)
+        device_id = _get_device_id()
+        hostname = socket.gethostname()
+        name = f"{hostname}-cli"
+        r = client.post("/api/auth/init", {"name": name, "device_id": device_id})
+        d = r.json()
+        save_auth(
+            agent_id=d["agent_id"],
+            name=d["name"],
+            access_token=d["access_token"],
+            refresh_token=d["refresh_token"],
+            expires_in=d["expires_in"],
+            base_url=base_url,
+        )
+        return d
+    except Exception as e:
+        return None
+
+
 @click.group()
 @click.option("--url", default=BASE_URL, help="API base URL")
 @click.pass_context
@@ -25,63 +48,14 @@ def cli(ctx, url):
     ctx.obj["url"] = url
     ctx.obj["client"] = APIClient(url)
 
-
-# ─── AUTH ─────────────────────────────────────────────────────────────────────
-
-
-@cli.command("init")
-@click.option("--name", default=None, help="Agent name")
-@click.option("--did", default=None, help="DID URL")
-@click.option("--endpoint", default=None, help="Agent endpoint URL")
-@click.option("--server", "server_url", default=None, help="川流 API server URL")
-@click.pass_context
-def init(ctx, name, did, endpoint, server_url):
-    """Register this agent with the 川流 platform.
-    
-    First run will prompt for agent name if not provided.
-    Example:
-        unendingx init --name "MyAgent" --server https://api.unendingx.com
-    """
-    # Interactive mode if name not provided
-    if not name:
-        click.echo("\n=== Agent Registration ===")
-        name = click.prompt("Enter agent name", type=str)
-        if not server_url:
-            default_server = "http://81.70.187.125:8000"
-            if click.confirm(f"Connect to server [{default_server}]?", default=True):
-                server_url = default_server
-    
-    base_url = server_url or ctx.obj["url"]
-    client = APIClient(base_url)
-    
-    data = {"name": name}
-    if did:
-        data["did"] = did
-    if endpoint:
-        data["endpoint"] = endpoint
-    data["device_id"] = _get_device_id()
-    
-    r = client.post("/api/auth/init", data)
-    d = r.json()
-    
-    # Save auth data
-    save_auth(
-        agent_id=d["agent_id"],
-        name=d["name"],
-        access_token=d["access_token"],
-        refresh_token=d["refresh_token"],
-        expires_in=d["expires_in"],
-        base_url=base_url,
-    )
-    
-    click.echo("\n✅ Agent registered successfully!")
-    click.echo(f"\nAgent ID: {d['agent_id']}")
-    click.echo(f"Agent Name: {d['name']}")
-    click.echo(f"API Key: {d['api_key']}  ← Save this! It won't be shown again.")
-    click.echo(f"\nAccess Token: {d['access_token'][:40]}...")
-    click.echo(f"Token expires in: {d['expires_in'] // 60} minutes")
-    click.echo(f"Refresh Token: saved to ~/.config/unendingx/config.json")
-    click.echo(f"\n🎉 Setup complete! Run 'unendingx auth status' to verify.")
+    # Auto-register if not logged in (first run)
+    if not config.get("access_token") or is_token_expired():
+        click.echo("\n🔄 First run detected. Auto-registering this agent...")
+        d = _auto_register(url)
+        if d:
+            click.echo(f"✅ Registered as: {d['name']} (ID: {d['agent_id'][:8]}...)")
+        else:
+            click.echo("⚠️  Auto-registration failed. Some commands may not work.", err=True)
 
 
 @cli.group("auth")
@@ -150,7 +124,7 @@ def status(ctx):
         else:
             click.echo(f"Refresh Token: ❌ Not found")
     else:
-        print_error("Not logged in. Run 'unendingx init' or 'unendingx auth login' first.")
+        print_error("Not logged in. Run any unendingx command to auto-register, or use 'unendingx auth login'.")
 
 
 @auth_group.command("logout")

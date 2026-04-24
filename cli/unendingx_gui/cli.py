@@ -146,12 +146,12 @@ def gui(port: int, api: str, no_open: bool):
         if not click.confirm("Continue anyway?"):
             return
 
-    # 3. Find frontend
-    frontend_root = Path(__file__).resolve().parents[2] / "frontend"
+    # 3. Find frontend-gui (local plugin GUI)
+    frontend_root = Path(__file__).resolve().parents[2] / "frontend-gui"
     if not frontend_root.exists():
-        frontend_root = Path(os.getcwd()) / "frontend"
+        frontend_root = Path(os.getcwd()) / "frontend-gui"
     if not frontend_root.exists():
-        click.echo("Error: frontend directory not found.", err=True)
+        click.echo("Error: frontend-gui directory not found. Please reinstall unendingx-gui.", err=True)
         sys.exit(1)
 
     # 4. Check if frontend already running

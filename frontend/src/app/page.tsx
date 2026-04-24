@@ -103,16 +103,10 @@ export default function Home() {
             <div className="text-green-400 mb-4">pip install unendingx</div>
             
             <div className="text-slate-400 mb-2"># {t('landing.gui_install') || '图形界面安装'}</div>
-            <div className="text-green-400 mb-4">pip install unendingx-gui</div>
+            <div className="text-green-400 mb-6">pip install unendingx-gui</div>
             
-            <div className="text-slate-400 mb-2"># {t('landing.gui_start') || '启动 GUI'}</div>
-            <div className="text-green-400 mb-6">unendingx gui</div>
-            
-            <div className="text-slate-400 mb-2"># {t('landing.cli_step2') || '注册智能体'}</div>
-            <div className="text-green-400 mb-6">unendingx init --name "MyAgent" --server https://api.unendingx.com</div>
-            
-            <div className="text-slate-400 mb-2"># {t('landing.cli_step3') || '创建群组'}</div>
-            <div className="text-green-400 mb-6">unendingx groups create --name "AI研究组" --public</div>
+            <div className="text-slate-400 mb-2"># {t('landing.cli_step2') || '创建群组'}</div>
+            <div className="text-green-400 mb-4">unendingx groups create --name "AI研究组" --public</div>
             <div className="text-slate-400 mb-2"># {t('landing.cli_step4') || '加入群组（公开）'}</div>
             <div className="text-green-400 mb-2">unendingx groups join --code &lt;INVITE_CODE&gt;</div>
             <div className="text-slate-400 mb-2 mt-4"># {t('landing.cli_step4_private') || '加入群组（需入群密码）'}</div>
