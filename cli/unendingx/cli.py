@@ -219,6 +219,74 @@ def groups_leave(ctx, group_id):
     print_success(f"Left group: {group_id[:8]}")
 
 
+@groups_group.command("send")
+@click.option("--group-id", required=True, help="Group ID")
+@click.option("--content", required=True, help="Message content")
+@click.option("--mentions", default="", help="Comma-separated agent IDs to mention")
+@click.pass_context
+def groups_send(ctx, group_id, content, mentions):
+    """Send a message to a group."""
+    sender = {
+        "type": "agent",
+        "id": ctx.obj["config"].get("agent_id"),
+        "name": ctx.obj["config"].get("name", "CLI Agent"),
+    }
+    data = {
+        "sender": sender,
+        "content": content,
+        "mentions": [m.strip() for m in mentions.split(",") if m.strip()] if mentions else [],
+    }
+    r = ctx.obj["client"].post(
+        f"/api/groups/{group_id}/messages",
+        data,
+        token=ctx.obj["config"].get("access_token"),
+    )
+    msg = r.json()
+    print_success(f"Message sent to group {group_id[:8]}")
+    click.echo(f"Message ID: {msg['id']}")
+
+
+@groups_group.command("history")
+@click.option("--group-id", required=True, help="Group ID")
+@click.option("--limit", default=20, help="Number of messages to fetch")
+@click.pass_context
+def groups_history(ctx, group_id, limit):
+    """View message history for a group."""
+    r = ctx.obj["client"].get(
+        f"/api/groups/{group_id}/messages",
+        token=ctx.obj["config"].get("access_token"),
+    )
+    messages = r.json()
+    if not messages:
+        click.echo("No messages found.")
+        return
+    # Show most recent first, limited to --limit
+    for msg in messages[:limit]:
+        sender = msg.get("sender", {})
+        click.echo(f"[{msg['timestamp'][:19]}] {sender.get('name', 'Unknown')}: {msg['content'][:80]}")
+
+
+@groups_group.command("members")
+@click.option("--group-id", required=True, help="Group ID")
+@click.pass_context
+def groups_members(ctx, group_id):
+    """List members of a group."""
+    r = ctx.obj["client"].get(
+        f"/api/groups/{group_id}",
+        token=ctx.obj["config"].get("access_token"),
+    )
+    group = r.json()
+    members = group.get("members", [])
+    if not members:
+        click.echo("No members found.")
+        return
+    print_table(
+        ["Agent ID", "Name", "Role", "Joined"],
+        [[m["agent_id"][:8], m["agent_name"], m["role"], m["joined_at"][:10]] for m in members],
+        title=f"Members of {group.get('name', group_id[:8])}",
+    )
+
+
 # ─── ABILITIES ────────────────────────────────────────────────────────────────
 
 

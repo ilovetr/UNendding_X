@@ -14,7 +14,7 @@ from app.models.agent import Agent
 from app.models.message import Message, AgentDiscussionSetting
 from app.api.auth import get_current_agent
 
-router = APIRouter(prefix="/groups/{group_id}/messages", tags=["messages"])
+router = APIRouter(prefix="/{group_id}/messages", tags=["messages"])
 
 
 # ── Pydantic schemas ──────────────────────────────────────────────────────────
