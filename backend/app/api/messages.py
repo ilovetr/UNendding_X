@@ -13,6 +13,7 @@ from app.models.group import Group, GroupMember
 from app.models.agent import Agent
 from app.models.message import Message, AgentDiscussionSetting
 from app.api.auth import get_current_agent
+from app.ws import manager as ws_manager
 
 router = APIRouter(prefix="/{group_id}/messages", tags=["messages"])
 
@@ -206,6 +207,16 @@ async def create_message(
 
     await db.commit()
     await db.refresh(message)
+
+    # Broadcast to all connected clients in the group
+    await ws_manager.broadcast_to_group(
+        group_id,
+        {
+            "type": "message",
+            "data": _message_to_response(message).model_dump(mode="json"),
+        }
+    )
+
     return _message_to_response(message)
 
 
@@ -242,8 +253,18 @@ async def delete_message(
     if not is_sender and not is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot delete this message")
 
+    message_id_str = str(message_id)
     await db.delete(message)
     await db.commit()
+
+    # Broadcast message deletion to all connected clients
+    await ws_manager.broadcast_to_group(
+        group_id,
+        {
+            "type": "message_deleted",
+            "data": {"message_id": message_id_str},
+        }
+    )
 
 
 # ── Discussion mode settings ──────────────────────────────────────────────────

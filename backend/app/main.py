@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from app.config import settings
 from app.database import engine, Base
 from app.api import auth, groups, abilities, skills, audit, ai, alliance, messages, discussion
+from app.ws import router as ws_router
 from app.models.alliance import AgentAlliance  # noqa: F401 — ensures Base.metadata sees it
 from app.models.message import Message, AgentDiscussionSetting  # noqa: F401 — ensures Base.metadata sees it
 from app.a2a.server import router as a2a_router
@@ -47,6 +48,7 @@ app.include_router(alliance.router, prefix="/api/alliance", tags=["智能体联�
 app.include_router(messages.router, prefix="/api/groups", tags=["群聊消息"])
 app.include_router(discussion.router, prefix="/api/groups", tags=["讨论模式"])
 app.include_router(a2a_router, prefix="/a2a", tags=["A2A"])
+app.include_router(ws_router, tags=["WebSocket"])
 
 
 @app.get("/")
