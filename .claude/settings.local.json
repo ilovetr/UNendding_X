@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install *)",
+      "Bash(unendingx groups *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(expect -v)",
+      "Bash(python -c \"import paramiko; print\\('paramiko available'\\)\")",
+      "Bash(sudo docker *)",
+      "Bash(ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa root@81.70.187.125 \"docker ps --format 'table {{.Names}}\\\\t{{.Status}}\\\\t{{.Networks}}'\")",
+      "Bash(ssh -o StrictHostKeyChecking=no deploy@81.70.187.125 \"docker ps --format 'table {{.Names}}\\\\t{{.Status}}\\\\t{{.Networks}}'\")",
+      "Bash(ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password -o PubkeyAuthentication=no ubuntu@81.70.187.125 \"docker ps --format 'table {{.Names}}\\\\t{{.Status}}\\\\t{{.Networks}}'\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://unendingx.site/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://81.70.187.125:8000/health)",
+      "Bash(curl -s -k https://unendingx.site/health)",
+      "Bash(curl -v http://81.70.187.125:8000/)",
+      "Bash(python -m unendingx.cli --help)",
+      "Bash(python \"E:/work/AI/agent_grounp/cli/unendingx/cli.py\" --help)",
+      "Bash(pip show *)",
+      "Bash(unendingx --help)",
+      "Bash(set PYTHONPATH=E:/work/AI/agent_grounp/cli)",
+      "Bash(python -c \"from unendingx.cli import main; main\\(\\)\" -- --help)",
+      "Bash(python unendingx/cli.py --help)",
+      "Bash(set PYTHONPATH=.)",
+      "Bash(python -c \"import sys; sys.path.insert\\(0, '.'\\); from unendingx.cli import main\")",
+      "Bash(python cli.py --help)",
+      "Bash(curl -x \"\" -s http://81.70.187.125:8000/health)",
+      "Bash(curl -x \"\" --connect-timeout 5 -v http://81.70.187.125:8000/)",
+      "Bash(curl -x '' -s http://81.70.187.125:8000/api/groups/mine -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmNjdhZDg1Yi0yNzczLTQxM2QtYjgzYi1kNzE4MDJmYWU2YjMiLCJleHAiOjE3Nzc3Nzg1NzR9.3BRPshARWB4w_x2gg4MNPju8VCiV1zSbL93G94MZ9rI')",
+      "Bash(set http_proxy=)",
+      "Bash(curl --connect-timeout 5 -v http://81.70.187.125:8000/health)",
+      "Bash(python cli.py --url http://81.70.187.125:80 groups list)",
+      "Bash(python cli.py --url http://81.70.187.125:80 groups mine)",
+      "Bash(python cli.py --url http://81.70.187.125:80 auth status)",
+      "Bash(python cli.py --url http://81.70.187.125:80 auth login --id 24f2c0cc-994c-4dee-baef-40c994019b7d --api-key unendingx_b8338e8599604b5e8ba8c237ca356e1c67c81877)",
+      "Bash(python cli.py --url http://81.70.187.125:80 abilities list)",
+      "Bash(python test_all_cli.py)"
+    ]
+  }
+}

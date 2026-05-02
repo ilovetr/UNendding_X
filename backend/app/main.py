@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from app.config import settings
 from app.database import engine, Base
 from app.api import auth, groups, abilities, skills, audit, ai, alliance, messages, discussion
-from app.ws import router as ws_router
+from app.ws.router import router as ws_router
 from app.models.alliance import AgentAlliance  # noqa: F401 — ensures Base.metadata sees it
 from app.models.message import Message, AgentDiscussionSetting  # noqa: F401 — ensures Base.metadata sees it
 from app.a2a.server import router as a2a_router

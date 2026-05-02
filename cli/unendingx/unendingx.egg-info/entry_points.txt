@@ -1,0 +1,2 @@
+[console_scripts]
+unendingx = unendingx.cli:main

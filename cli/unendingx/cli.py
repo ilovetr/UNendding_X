@@ -7,9 +7,9 @@ import subprocess
 
 import click
 
-from unendingx.client import APIClient
-from unendingx.config import load_config, save_config, save_auth, is_token_expired, update_access_token, _get_device_id
-from unendingx.format import print_error, print_json, print_success, print_table
+from client import APIClient
+from config import load_config, save_config, save_auth, is_token_expired, update_access_token, _get_device_id
+from format import print_error, print_json, print_success, print_table
 
 BASE_URL = os.environ.get("UNENDINGX_URL", "http://localhost:8000")
 
@@ -50,10 +50,10 @@ def cli(ctx, url):
 
     # Auto-register if not logged in (first run)
     if not config.get("access_token") or is_token_expired():
-        click.echo("\n🔄 First run detected. Auto-registering this agent...")
+        click.echo("\n[Auto] First run detected. Auto-registering this agent...")
         d = _auto_register(url)
         if d:
-            click.echo(f"✅ Registered as: {d['name']} (ID: {d['agent_id'][:8]}...)")
+            click.echo(f"[OK] Registered as: {d['name']} (ID: {d['agent_id'][:8]}...)")
         else:
             click.echo("⚠️  Auto-registration failed. Some commands may not work.", err=True)
 
@@ -101,6 +101,10 @@ def login(ctx, agent_id, api_key):
     config["base_url"] = ctx.obj["url"]
     config["agent_id"] = agent_id
     config["access_token"] = r.json()["access_token"]
+    # Save expires_in as token_expires_at (timestamp)
+    import time
+    expires_in = r.json().get("expires_in", 86400)
+    config["token_expires_at"] = time.time() + expires_in
     save_config(config)
     print_success("Logged in successfully!")
 
@@ -120,9 +124,9 @@ def status(ctx):
         click.echo(f"Base URL: {config.get('base_url', 'unknown')}")
         click.echo(f"Token expires in: {remaining // 60} minutes")
         if config.get("refresh_token"):
-            click.echo(f"Refresh Token: ✅ Saved")
+            click.echo(f"Refresh Token: [OK] Saved")
         else:
-            click.echo(f"Refresh Token: ❌ Not found")
+            click.echo(f"Refresh Token: [X] Not found")
     else:
         print_error("Not logged in. Run any unendingx command to auto-register, or use 'unendingx auth login'.")
 
@@ -226,10 +230,14 @@ def groups_leave(ctx, group_id):
 @click.pass_context
 def groups_send(ctx, group_id, content, mentions):
     """Send a message to a group."""
+    agent_id = ctx.obj["config"].get("agent_id")
+    if not agent_id:
+        click.echo("Error: Not logged in. Use 'unendingx auth login' first.", err=True)
+        return
     sender = {
         "type": "agent",
-        "id": ctx.obj["config"].get("agent_id"),
-        "name": ctx.obj["config"].get("name", "CLI Agent"),
+        "id": agent_id,
+        "name": ctx.obj["config"].get("name") or "CLI Agent",
     }
     data = {
         "sender": sender,
@@ -463,9 +471,16 @@ def audit_list(ctx, action, limit):
     if not logs:
         click.echo("No audit logs.")
         return
+    rows = []
+    for l in logs:
+        ts = (l.get("timestamp") or "")[:16]
+        action_val = l.get("action") or ""
+        agent_id = (l.get("agent_id") or "")[:8]
+        details = str(l.get("details") or "")[:40]
+        rows.append([ts, action_val, agent_id, details])
     print_table(
         ["Timestamp", "Action", "Agent", "Details"],
-        [[l["timestamp"][:16], l["action"], l.get("agent_id", "")[:8], str(l.get("details", ""))[:40]] for l in logs],
+        rows,
         title=f"Audit Logs (showing {len(logs)})",
     )
 

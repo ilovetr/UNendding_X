@@ -2,7 +2,7 @@
 
 import requests
 from click import ClickException
-from unendingx.config import load_config, is_token_expired, update_access_token
+from config import load_config, is_token_expired, update_access_token
 
 
 class APIClient:

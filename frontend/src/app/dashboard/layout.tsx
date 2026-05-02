@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { clearAuth, getAgentId, setAgentId, setToken, getToken } from '@/lib/api'
+import { clearAuth, getAgentId, setAgentId, setToken, getToken, isAuthenticated } from '@/lib/api'
 import { useI18n } from '@/lib/i18n'
 import { useEffect, useState } from 'react'
 
@@ -68,13 +68,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   useEffect(() => {
+    // Auth check: redirect to login if not authenticated
+    if (!isAuthenticated()) {
+      router.push('/login')
+      return
+    }
     const id = getAgentId() || ''
     setAgentIdState(id)
     const agents = loadSavedAgents()
     setSavedAgents(agents)
     const found = agents.find(a => a.id === id)
     if (found) setAgentName(found.name)
-  }, [])
+  }, [router])
 
   return (
     <div className="flex min-h-screen bg-slate-50">

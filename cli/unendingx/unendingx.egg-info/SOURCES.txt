@@ -1,0 +1,7 @@
+pyproject.toml
+unendingx.egg-info/PKG-INFO
+unendingx.egg-info/SOURCES.txt
+unendingx.egg-info/dependency_links.txt
+unendingx.egg-info/entry_points.txt
+unendingx.egg-info/requires.txt
+unendingx.egg-info/top_level.txt
