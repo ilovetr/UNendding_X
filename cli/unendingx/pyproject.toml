@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "unendingx"
-version = "0.2.0"
+version = "0.2.1"
 description = "川流/UnendingX CLI - Agent management and group operations based on A2A protocol"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -46,9 +46,8 @@ Homepage = "https://github.com/ilovetr/UNendding_X"
 Repository = "https://github.com/ilovetr/UNendding_X"
 Documentation = "https://github.com/ilovetr/UNendding_X#readme"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["unendingx*"]
+[tool.setuptools]
+packages = ["unendingx"]
 
 [tool.setuptools.package-dir]
-"" = "."
+unendingx = "."
