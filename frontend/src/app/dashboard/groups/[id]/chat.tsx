@@ -14,6 +14,7 @@ import {
 import { ChatMessageList } from '@/components/chat-message'
 import { MentionSelect } from '@/components/mention-select'
 import { getToken, getAgentId, getAgentName, getAgentName as fetchAgentName } from '@/lib/api'
+import { useWebSocket } from '@/lib/useWebSocket'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -51,6 +52,48 @@ export default function GroupChatPage() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const wsMessageHandlerRef = useRef<(message: any) => void | null>(null)
+
+  // WebSocket message handler
+  const handleWSMessage = useCallback((message: any) => {
+    if (message.type === 'new_message' && message.data) {
+      const msg = message.data
+      // Only add if not from current user (current user already added via sendMessage)
+      const currentAgentId = getAgentId()
+      if (msg.sender?.id !== currentAgentId) {
+        setMessages(prev => {
+          // Check if message already exists
+          if (prev.some(m => m.id === msg.id)) {
+            return prev
+          }
+          const newMsg: ChatMessage = {
+            id: msg.id,
+            group_id: groupId,
+            sender: {
+              type: msg.sender?.type || 'agent',
+              id: msg.sender?.id || '',
+              name: msg.sender?.name || 'Unknown',
+            },
+            content: msg.content,
+            timestamp: msg.timestamp ? new Date(msg.timestamp).getTime() : Date.now(),
+            mentions: msg.mentions || [],
+            is_broadcast: msg.is_broadcast || false,
+            is_a2a_triggered: msg.is_a2a_triggered || false,
+            a2a_response_to: msg.a2a_response_to || null,
+            direction: 'incoming',
+          }
+          return [...prev, newMsg]
+        })
+      }
+    }
+  }, [groupId])
+
+  // Initialize WebSocket
+  const { isConnected: wsConnected } = useWebSocket(API_BASE.replace('http', 'ws').replace('https', 'wss'), groupId, {
+    onMessage: handleWSMessage,
+    onConnect: () => console.log('Group chat WebSocket connected'),
+    onDisconnect: () => console.log('Group chat WebSocket disconnected'),
+  })
 
   // Fetch group details
   const fetchGroup = useCallback(async () => {
@@ -224,6 +267,8 @@ export default function GroupChatPage() {
                 {group?.members.length || 0} {t('chat.members') || '位成员'}
               </p>
             </div>
+            {/* WebSocket connection indicator */}
+            <div className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-emerald-500' : 'bg-slate-300'}`} title={wsConnected ? '实时连接已建立' : '实时连接未建立'} />
           </div>
 
           <div className="flex items-center gap-2">
