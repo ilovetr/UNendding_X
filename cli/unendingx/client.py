@@ -3,7 +3,12 @@
 import os
 import requests
 from click import ClickException
-from .config import load_config, is_token_expired, update_access_token
+
+# Try relative import first, fall back to absolute
+try:
+    from .config import load_config, is_token_expired, update_access_token
+except ImportError:
+    from config import load_config, is_token_expired, update_access_token
 
 
 class APIClient:

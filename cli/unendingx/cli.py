@@ -7,9 +7,18 @@ import subprocess
 
 import click
 
-from .client import APIClient
-from .config import load_config, save_config, save_auth, is_token_expired, update_access_token, _get_device_id
-from .format import print_error, print_json, print_success, print_table
+# Support both package import and direct run
+if __name__ == "__main__" and __package__ is None:
+    # Running directly (not installed as package)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from client import APIClient
+    from config import load_config, save_config, save_auth, is_token_expired, update_access_token, _get_device_id
+    from format import print_error, print_json, print_success, print_table
+else:
+    # Running as installed package
+    from .client import APIClient
+    from .config import load_config, save_config, save_auth, is_token_expired, update_access_token, _get_device_id
+    from .format import print_error, print_json, print_success, print_table
 
 BASE_URL = os.environ.get("UNENDINGX_URL", "http://81.70.187.125:80")
 
