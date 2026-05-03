@@ -16,13 +16,16 @@ CONFIG_DIR = Path.home() / ".config" / "unendingx"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
 DEFAULT_CONFIG = {
-    "base_url": "http://localhost:8000",
+    "base_url": "http://81.70.187.125:80",
+    "default_server": None,  # Can be set to override base_url
     "agent_id": None,
     "name": None,
     "access_token": None,
     "refresh_token": None,
     "device_id": None,  # Client-generated device identifier
     "token_expires_at": None,  # Access token expiry timestamp
+    "history_enabled": True,  # CLI command history
+    "command_history": [],  # Last N commands
 }
 
 # Fields that need encryption
@@ -181,6 +184,57 @@ def is_token_expired() -> bool:
         return True
     # Consider expired if less than 1 minute remaining
     return time.time() >= (expires_at - 60)
+
+
+def get_default_server() -> str | None:
+    """Get the configured default server URL."""
+    config = load()
+    return config.get("default_server")
+
+
+def set_default_server(url: str) -> None:
+    """Set the default server URL."""
+    config = load()
+    config["default_server"] = url
+    save(config)
+
+
+def clear_default_server() -> None:
+    """Clear the default server URL."""
+    config = load()
+    config.pop("default_server", None)
+    save(config)
+
+
+def add_to_history(command: str) -> None:
+    """Add a command to history (max 100 entries)."""
+    config = load()
+    if not config.get("history_enabled", True):
+        return
+    history = config.get("command_history", [])
+    # Remove duplicates
+    if command in history:
+        history.remove(command)
+    # Add to end
+    history.append(command)
+    # Keep only last 100
+    if len(history) > 100:
+        history = history[-100:]
+    config["command_history"] = history
+    save(config)
+
+
+def get_history() -> list[str]:
+    """Get command history."""
+    config = load()
+    return config.get("command_history", [])
+
+
+def clear_history() -> None:
+    """Clear command history."""
+    config = load()
+    config["command_history"] = []
+    save(config)
 
 
 # Aliases used by cli.py

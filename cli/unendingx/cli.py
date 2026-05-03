@@ -12,15 +12,30 @@ if __name__ == "__main__" and __package__ is None:
     # Running directly (not installed as package)
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     from client import APIClient
-    from config import load_config, save_config, save_auth, is_token_expired, update_access_token, _get_device_id
+    from config import (
+        load_config, save_config, save_auth, is_token_expired,
+        update_access_token, _get_device_id,
+        get_default_server, set_default_server, clear_default_server,
+        add_to_history, get_history, clear_history,
+    )
     from format import print_error, print_json, print_success, print_table
 else:
     # Running as installed package
     from .client import APIClient
-    from .config import load_config, save_config, save_auth, is_token_expired, update_access_token, _get_device_id
+    from .config import (
+        load_config, save_config, save_auth, is_token_expired,
+        update_access_token, _get_device_id,
+        get_default_server, set_default_server, clear_default_server,
+        add_to_history, get_history, clear_history,
+    )
     from .format import print_error, print_json, print_success, print_table
 
-BASE_URL = os.environ.get("UNENDINGX_URL", "http://81.70.187.125:80")
+# Base URL: env var > config default > hardcoded fallback
+DEFAULT_SERVER = "http://81.70.187.125:80"
+BASE_URL = os.environ.get(
+    "UNENDINGX_URL",
+    get_default_server() or DEFAULT_SERVER
+)
 
 
 def _auto_register(base_url: str) -> dict | None:
@@ -492,6 +507,83 @@ def audit_list(ctx, action, limit):
         rows,
         title=f"Audit Logs (showing {len(logs)})",
     )
+
+
+# ─── CONFIG ───────────────────────────────────────────────────────────────────
+
+
+@cli.group("config")
+def config_group():
+    """Configuration commands."""
+
+
+@config_group.command("set-server")
+@click.argument("url")
+@click.pass_context
+def config_set_server(ctx, url):
+    """Set the default server URL."""
+    set_default_server(url)
+    print_success(f"Default server set to: {url}")
+
+
+@config_group.command("get-server")
+@click.pass_context
+def config_get_server(ctx):
+    """Get the current default server URL."""
+    server = get_default_server()
+    if server:
+        click.echo(f"Default server: {server}")
+    else:
+        click.echo("No default server configured. Using BASE_URL.")
+
+
+@config_group.command("clear-server")
+@click.pass_context
+def config_clear_server(ctx):
+    """Clear the default server URL."""
+    clear_default_server()
+    print_success("Default server cleared.")
+
+
+@config_group.command("set-history")
+@click.argument("enabled", type=bool)
+@click.pass_context
+def config_set_history(ctx, enabled):
+    """Enable or disable command history."""
+    config = load_config()
+    config["history_enabled"] = enabled
+    save_config(config)
+    print_success(f"Command history {'enabled' if enabled else 'disabled'}.")
+
+
+# ─── HISTORY ───────────────────────────────────────────────────────────────────
+
+
+@cli.group("history")
+def history_group():
+    """Command history commands."""
+
+
+@history_group.command("list")
+@click.option("--limit", default=20, type=int, help="Number of entries to show")
+@click.pass_context
+def history_list(ctx, limit):
+    """Show command history."""
+    history = get_history()
+    if not history:
+        click.echo("No command history.")
+        return
+    click.echo(f"Last {min(len(history), limit)} commands:")
+    for i, cmd in enumerate(history[-limit:], 1):
+        click.echo(f"  {i}. {cmd}")
+
+
+@history_group.command("clear")
+@click.pass_context
+def history_clear(ctx):
+    """Clear command history."""
+    clear_history()
+    print_success("Command history cleared.")
 
 
 # ─── A2A ──────────────────────────────────────────────────────────────────────
