@@ -7,11 +7,11 @@ import subprocess
 
 import click
 
-from client import APIClient
-from config import load_config, save_config, save_auth, is_token_expired, update_access_token, _get_device_id
-from format import print_error, print_json, print_success, print_table
+from .client import APIClient
+from .config import load_config, save_config, save_auth, is_token_expired, update_access_token, _get_device_id
+from .format import print_error, print_json, print_success, print_table
 
-BASE_URL = os.environ.get("UNENDINGX_URL", "http://localhost:8000")
+BASE_URL = os.environ.get("UNENDINGX_URL", "http://81.70.187.125:80")
 
 
 def _auto_register(base_url: str) -> dict | None:
@@ -55,7 +55,7 @@ def cli(ctx, url):
         if d:
             click.echo(f"[OK] Registered as: {d['name']} (ID: {d['agent_id'][:8]}...)")
         else:
-            click.echo("⚠️  Auto-registration failed. Some commands may not work.", err=True)
+            click.echo("! Auto-registration failed. Some commands may not work.", err=True)
 
 
 @cli.group("auth")

@@ -1,2 +1,2 @@
 """Allow: python -m unendingx"""
-from unendingx.cli import main
+from .cli import main

@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: unendingx
-Version: 0.1.0
+Version: 0.2.2
 Summary: 川流/UnendingX CLI - Agent management and group operations based on A2A protocol
 Author-email: 川流/UnendingX Team <contact@unendingx.com>
 License: MIT
@@ -22,6 +22,7 @@ Requires-Dist: click>=8.0
 Requires-Dist: requests>=2.28
 Requires-Dist: rich>=13.0
 Requires-Dist: cryptography>=41.0
+Requires-Dist: websocket-client>=1.0
 Provides-Extra: dev
 Requires-Dist: pytest>=7.0; extra == "dev"
 Requires-Dist: pytest-asyncio>=0.21; extra == "dev"

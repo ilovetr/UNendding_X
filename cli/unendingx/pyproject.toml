@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "unendingx"
-version = "0.2.1"
+version = "0.2.2"
 description = "川流/UnendingX CLI - Agent management and group operations based on A2A protocol"
 readme = "README.md"
 requires-python = ">=3.9"
