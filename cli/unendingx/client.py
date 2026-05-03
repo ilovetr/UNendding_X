@@ -1,5 +1,6 @@
 """HTTP client wrapper for 川流/UnendingX API."""
 
+import os
 import requests
 from click import ClickException
 from .config import load_config, is_token_expired, update_access_token
@@ -7,12 +8,28 @@ from .config import load_config, is_token_expired, update_access_token
 
 class APIClient:
     """Thin wrapper around requests for 川流/UnendingX API calls.
-    
+
     Automatically refreshes tokens when expired.
+    Supports bypassing system proxy via NO_PROXY or trust_env=False.
     """
 
-    def __init__(self, base_url: str = "http://localhost:8000"):
+    def __init__(self, base_url: str = "http://localhost:8000", trust_env: bool = False):
         self.base_url = base_url.rstrip("/")
+        self.trust_env = trust_env
+        self._session = self._create_session()
+
+    def _create_session(self) -> requests.Session:
+        """Create a requests session with proxy bypass."""
+        session = requests.Session()
+        if not self.trust_env:
+            # Bypass system proxy settings for direct connection
+            session.trust_env = False
+            # Also clear any proxy env vars for this session
+            session.proxies = {
+                'http': None,
+                'https': None,
+            }
+        return session
 
     def _headers(self, token: str | None = None) -> dict:
         headers = {"Content-Type": "application/json"}
@@ -34,31 +51,32 @@ class APIClient:
         config = load_config()
         token = config.get("access_token")
         refresh = config.get("refresh_token")
-        
+
         if not token or not refresh:
             return token
-        
+
         # Check if token is expired or about to expire
         if is_token_expired():
             try:
-                # Try to refresh
-                response = requests.post(
+                # Try to refresh (use session to bypass proxy)
+                response = self._session.post(
                     f"{self.base_url}/api/auth/refresh",
                     json={"refresh_token": refresh},
                     timeout=30,
+                    proxies={'http': None, 'https': None},
                 )
                 if response.status_code == 200:
                     data = response.json()
                     update_access_token(
                         access_token=data["access_token"],
-                        refresh_token=refresh,  # Keep same refresh (or use new if returned)
+                        refresh_token=refresh,
                         expires_in=data["expires_in"],
                     )
                     return data["access_token"]
             except Exception:
                 pass
             return None
-        
+
         return token
 
     def get(self, path: str, token: str | None = None) -> requests.Response:
@@ -66,7 +84,8 @@ class APIClient:
         if token is None:
             token = self._get_valid_token()
         url = f"{self.base_url}{path}"
-        r = requests.get(url, headers=self._headers(token), timeout=30)
+        r = self._session.get(url, headers=self._headers(token), timeout=30,
+                             proxies={'http': None, 'https': None})
         self._handle_error(r)
         return r
 
@@ -75,7 +94,8 @@ class APIClient:
         if token is None:
             token = self._get_valid_token()
         url = f"{self.base_url}{path}"
-        r = requests.post(url, json=data, headers=self._headers(token), timeout=30)
+        r = self._session.post(url, json=data, headers=self._headers(token), timeout=30,
+                              proxies={'http': None, 'https': None})
         self._handle_error(r)
         return r
 
@@ -84,7 +104,8 @@ class APIClient:
         if token is None:
             token = self._get_valid_token()
         url = f"{self.base_url}{path}"
-        r = requests.put(url, json=data, headers=self._headers(token), timeout=30)
+        r = self._session.put(url, json=data, headers=self._headers(token), timeout=30,
+                              proxies={'http': None, 'https': None})
         self._handle_error(r)
         return r
 
@@ -93,7 +114,8 @@ class APIClient:
         if token is None:
             token = self._get_valid_token()
         url = f"{self.base_url}{path}"
-        r = requests.delete(url, headers=self._headers(token), timeout=30)
+        r = self._session.delete(url, headers=self._headers(token), timeout=30,
+                                 proxies={'http': None, 'https': None})
         self._handle_error(r)
         return r
 
